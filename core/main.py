@@ -50,7 +50,8 @@ class Program(object):
 
     def swizzle_menu(self):
         """The menu which the user can repack(swizzle) an existing packed texture.\n
-                The user can optionally add an alpha channel too."""
+        The user can optionally add an alpha channel too.
+        """
         swizzle_menu_text = "Select:\n{}) Swizzle (Swap channels)\n{}) Add Alpha Channel\n{}) Back to Main Menu\n".format(*self.__choices)
         # 2) Repack existing texture
         #   2a) Swap channels
@@ -68,8 +69,14 @@ class Program(object):
                 continue
         if self.choice == self.__choices[0]:
             pass
+        # Get file input from user - how? Maybe read from a file can be an option (WAY IN THE FUTURE - batching).
+        # Put in some facts to verify it is the texture the user wanted to swizzle
+        # Needs to be valid file path, supported file extension
+        # Support for single and multiple operations (R > G, R > B etc.)
+        # Ability to overwrite old file (copy old file just in case)
+        # Undo? Or Reset to original texture state
         elif self.choice == self.__choices[1]:
-            pass
+            print("TO DO")
         elif self.choice == self.__choices[-1]:
             self.main_menu()
 
@@ -89,7 +96,7 @@ class Program(object):
 # except IOError:
 #     print("Can't open an image, Invalid file path or it doesn't exist!")
 
-# Names - TextureBox, SwizzleBox, Texture Swizzler, Channel Packer
+# Names - TextureBox, SwizzleBox, Texture Swizzler, Channel Packer, Fo' Swizzle
 
 if __name__ == '__main__':
     Program()
