@@ -9,11 +9,9 @@ class Program(object):
     __intro_text = "{0}\n" \
                    "Welcome to the Simple Texture Packer 0.1\nCreated By\nAndrew \'teessider\' Bell.\n" \
                    "{0}\n" \
-                   "This command line tool is for packing textures without the need to go into more advanced programs.\n".format(
-        __fluff)
+                   "This command line tool is for packing textures without the need to go into more advanced programs.\n".format(__fluff)
     # For string formatting which includes __choices list, I use automatic one as the choices could expand in the future
-    __main_choice_text = "Select:\n{}) Create new packed texture from existing ones\n{}) Repack (Swizzle) a pre-packed texture \n{}) Exit Program\n\n".format(
-        *__choices)
+    __main_choice_text = "Select:\n{}) Create new packed texture from existing ones\n{}) Repack (Swizzle) a pre-packed texture \n{}) Exit Program\n\n".format(*__choices)
 
     def __init__(self):
         self.choice = 0
@@ -53,15 +51,14 @@ class Program(object):
     def swizzle_menu(self):
         """The menu which the user can repack(swizzle) an existing packed texture.\n
                 The user can optionally add an alpha channel too."""
-        swizzle_menu_text = "Select:\n{}) Swizzle (Swap channels)\n{}) Add Alpha Channel\n{}) Back to Main Menu\n".format(
-            *self.__choices)
+        swizzle_menu_text = "Select:\n{}) Swizzle (Swap channels)\n{}) Add Alpha Channel\n{}) Back to Main Menu\n".format(*self.__choices)
         # 2) Repack existing texture
         #   2a) Swap channels
         #   2b) Add Alpha Channel
         while True:
             try:
                 self.choice = int(self.user_input(swizzle_menu_text))
-                if self.choice == self.__choices[0] or self.__choices[1] or self.__choices[-1]:
+                if self.choice in (self.__choices[0], self.__choices[1], self.__choices[-1]):
                     break
                 else:
                     self.error_response("Invalid number")
