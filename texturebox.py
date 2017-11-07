@@ -21,32 +21,84 @@ RGBA = RGB + 'A'
 GRAY = 'L'
 
 
-class ChannelPacker(object):
+class ChannelPack:
     # Takes in a string like "R <> G" and so do Image.merge(RGB or RGBA, (green, red, blue))
-    # TODO: Need to change input and output as it doesn't make sense if user input is like the example above.
-    def __init__(self, image, _input, output):
+    def __init__(self, image):
         self.image = image
-        self._input = _input
-        self.output = output
-        self.output = output
+        self.input_channels = []
         self.new_channels = ()
 
-    def swizzle(self, mode=RGB):
+    def parse_input(self, user_action):
+        """
+        Parses the user input (which is formatted in a certain for aesthetic purposes) into a list containing the RGB channels to be swapped.\n
+        Returns:
+            list: RGB channels that will be swapped.
+
+        """
+        error_text_part = "Please specify the channels that will be swapped using the form: \"[RGB Channel 1] <> [RGB Channel 2]\""
+        try:
+            if ' ' not in user_action:
+                user_string = "{} {}{} {}".format(*user_action).split(' ')  # Need the spaces so it can be turned into a list for later.
+            else:
+                user_string = user_action.split(' ')
+
+            if (user_string[0].upper() in (RGB or RGBA)) and (user_string[1] == '<>') and (len(user_string) == 3):
+                # Checks to make sure the string is in the way that is wanted: "[Swizzle Input 1]<>[Swizzle Input 2]"
+                # Make sure only the letters are put into the list.
+                self.input_channels = user_string[::2]
+                return self.input_channels
+            else:
+                return error_text_part
+
+        except ValueError:
+            return "This must be a string! {}".format(error_text_part)
+        except IndexError:
+            return "Invalid input! {}".format(error_text_part)
+
+    def swizzle(self, rgb_swizzle_channels, mode=RGB):
         """
         Swizzles the two input channels of an RGB or RGBA texture.\n
         Returns:
             tuple: Swizzled texture channels ready to be merged into new texture.
         """
-        if mode == RGB:
-            if (self._input == 'R' and self.output == 'G') or (self._input == 'G' and self.output == 'R'):
+        swizzle_1 = rgb_swizzle_channels[0]
+        swizzle_2 = rgb_swizzle_channels[1]
+
+        def __rgb_ops():
+            # TODO: I CAN TURN THIS INTO A FUNCTION
+            if (swizzle_1 == 'R' and swizzle_2 == 'G') or (swizzle_1 == 'G' and swizzle_2 == 'R'):
                 self.new_channels = (self.image.get_channel(1), self.image.get_channel(0), self.image.get_channel(2))
-            elif (self._input == 'G' and self.output == 'B') or (self._input == 'B' and self.output == 'G'):
+                return self.new_channels
+
+            elif (swizzle_1 == 'G' and swizzle_2 == 'B') or (swizzle_1 == 'B' and swizzle_2 == 'G'):
                 self.new_channels = (self.image.get_channel(0), self.image.get_channel(2), self.image.get_channel(1))
-            elif (self._input == 'B' and self.output == 'R') or (self._input == 'R' and self.output == 'B'):
+                return self.new_channels
+
+            elif (swizzle_1 == 'B' and swizzle_2 == 'R') or (swizzle_1 == 'R' and swizzle_2 == 'B'):
                 self.new_channels = (self.image.get_channel(2), self.image.get_channel(1), self.image.get_channel(0))
+                return self.new_channels
+
+        if mode == RGB:
+            __rgb_ops()
+
         elif mode == RGBA:
-            # TODO: Add in RGBA support...but can i do without copy/pasting the above?
-            pass
+            __rgb_ops()
+
+            if (swizzle_1 == 'R' and swizzle_2 == 'A') or (swizzle_1 == 'A' and swizzle_2 == 'R'):
+                self.new_channels = (self.image.get_channel(3), self.image.get_channel(1), self.image.get_channel(2), self.image.get_channel(0))
+                return self.new_channels
+
+            elif (swizzle_1 == 'G' and swizzle_2 == 'A') or (swizzle_1 == 'A' and swizzle_2 == 'G'):
+                self.new_channels = (self.image.get_channel(0), self.image.get_channel(3), self.image.get_channel(2), self.image.get_channel(1))
+                return self.new_channels
+
+            elif (swizzle_1 == 'B' and swizzle_2 == 'A') or (swizzle_1 == 'A' and swizzle_2 == 'B'):
+                self.new_channels = (self.image.get_channel(0), self.image.get_channel(1), self.image.get_channel(3), self.image.get_channel(2))
+                return self.new_channels
+
+    def merge(self):
+        # TODO: Add RGBA support
+        return Image.merge(RGB, self.new_channels)
 
 
 def main_menu():
@@ -55,7 +107,7 @@ def main_menu():
     while True:
         try:
             # This can be done better i feel for now....the choice's are basically copy and paste every time xD
-            choice = int(user_input(__main_choice_text))
+            choice = int(input_question(__main_choice_text))
             if choice in __choices[:2]:
                 break
             elif choice == __choices[2]:
@@ -86,7 +138,7 @@ def swizzle_menu():
     swizzle_menu_text = "Select:\n{}) Swap RGB channels\n{}) Add Alpha Channel\n{}) Back to Main Menu\n".format(*__choices)
     while True:
         try:
-            choice = int(user_input(swizzle_menu_text))
+            choice = int(input_question(swizzle_menu_text))
             if choice in __choices:
                 break
             else:
@@ -103,7 +155,7 @@ def swizzle_menu():
         main_menu()
 
 
-def user_input(text):
+def input_question(text):
     return input("{0}What would you like to do?\n".format(text))
 
 
@@ -112,32 +164,36 @@ def error_response(response):
 
 
 def swap_rgba():
-    # TODO: Get file input from user - how? Maybe read from a file can be an option (WAY IN THE FUTURE - batching).
+    # TODO: Get file input from user - Maybe also reading from a file can be an option (WAY IN THE FUTURE - batching).
     # Support for single and multiple operations (R > G, R > B etc.)
     # Ability to overwrite old file (copy old file just in case)
     # Undo? Or Reset to original texture state
 
-    # input_image = input("Image path: ")
     input_image = "E:\Projects\\test\\test1.tga"  # test file for now
     # input_image = "E:\Projects\\test\\test2_alpha.tga"  # also test file for now
+    # image1a = "E:\Projects\\test\\test1_16bit.png"
     while True:
         try:
-            # image1a = "E:\Projects\\test\\test1_16bit.png"
+            # input_image = input("Image path: ")
             with Image.open(input_image) as image:  # type: Image.Image
                 print("Opened {file_name}\nFormat: {format}\nSize: {size}\nMode: {mode}"
                       .format(file_name=os.path.basename(input_image), format=image.format, size=image.size, mode=image.mode))
 
+                new_image = ChannelPack(image)
+                # TODO: USER INPUT
+                formatted_string = new_image.parse_input(input("TO DO: "))
+
                 if image.mode == RGB:
-                    # TODO: USER INPUT AT THIS POINT - ChannelSwizzle(red, green)
-                    # Splitting creates copies of the image anyway ;)
-                    red, green, blue = image.split()
-                    new_image = Image.merge(RGB, (green, blue, red)).getchannel(0)  # type: Image.Image
-                    new_image.show()  # for testing
+                    new_image.swizzle(formatted_string, mode=RGB)
+                    merged_image = new_image.merge()  # type: Image.Image
+
+                    merged_image.getchannel(0).show()  # for testing
 
                 elif image.mode == RGBA:
+                    pass
                     # TODO: NEED USER INPUT AT THIS POINT
-                    red, green, blue, alpha = image.split()
-                    alpha.show()  # for testing
+                    # new_image = ChannelPack(image).swizzle(mode=RGBA)  # type: Image.Image
+                    # new_image.getchannel(3).show()  # for testing
                 break
 
         except IOError:
