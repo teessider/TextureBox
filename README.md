@@ -1,5 +1,5 @@
 # TextureBox
-A tool for packing multiple greyscale textures into RGB(A) textures.  
+A tool for packing multiple grayscale textures into RGB(A) textures.  
 It can also repack existing RGB(A) textures.
 
 For now this purely a command-line tool (just to get started),  
