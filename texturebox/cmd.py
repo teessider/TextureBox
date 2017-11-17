@@ -104,10 +104,10 @@ def swap_rgba():
                 new_image = ChannelPack(image)
                 # TODO: USER INPUT
                 try:
-                    formatted_string = new_image.parse_input(input("Which channels should be swapped?\nPlease use the form: {}".format(new_image.form_text)))
+                    formatted_string = new_image.parse_input(input("Which channels should be swapped?\nPlease use the form: {}\n".format(new_image.form_text)))
                     new_image.swizzle(formatted_string)
                 except TypeError:
-                    print("One of the specified channels does not exist in the original texture!")
+                    print("One of the specified channels does not exist in the original texture!\n")
                     continue
 
                 if image.mode == RGB:
