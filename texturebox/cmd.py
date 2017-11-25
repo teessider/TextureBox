@@ -3,19 +3,19 @@ import sys
 
 from PIL import Image
 
-from texturebox.core import ChannelPack
+import texturebox.core
 
-__fluff = "*" * 50  # Purely cosmetic purpose ;)
-__choices = (1, 2, 3)
+_fluff = "*" * 50  # Purely cosmetic purpose ;)
+_choices = (1, 2, 3)
 
-__intro_text = "{0}\n" \
+_intro_text = "{0}\n" \
                "Welcome to the TextureBox\nCreated By\nAndrew \'teessider\' Bell.\n" \
                "{0}\n" \
                "This command line tool is for packing textures without the need to go into more advanced programs.\n" \
                "For more information on what packing textures means, please visit the Polycount Wiki entry for Channel Packing:\n" \
-               "http://wiki.polycount.com/wiki/ChannelPacking\n".format(__fluff)
-# For string formatting which includes __choices list, I use automatic one as the choices could expand in the future
-__main_choice_text = "Select:\n{0}) Create new packed texture from existing ones\n{1}) Repack a pre-packed texture \n{2}) Exit Program\n\n".format(*__choices)
+               "http://wiki.polycount.com/wiki/ChannelPacking\n".format(_fluff)
+# For string formatting which includes _choices list, I use automatic one as the choices could expand in the future
+_main_choice_text = "Select:\n{0}) Create new packed texture from existing ones\n{1}) Repack a pre-packed texture \n{2}) Exit Program\n\n".format(*_choices)
 
 
 RGB = 'RGB'
@@ -29,10 +29,10 @@ def main_menu():
     while True:
         try:
             # This can be done better i feel for now....the choice's are basically copy and paste every time xD
-            choice = int(input_question(__main_choice_text))
-            if choice in __choices[:2]:
+            choice = int(input_question(_main_choice_text))
+            if choice in _choices[:2]:
                 break
-            elif choice == __choices[2]:
+            elif choice == _choices[2]:
                 sys.exit(0)
             else:
                 error_response("Invalid number")
@@ -40,10 +40,10 @@ def main_menu():
         except ValueError:
             error_response("It must be a number")
             continue
-    if choice == __choices[0]:
+    if choice == _choices[0]:
         create_new_menu()
 
-    elif choice == __choices[1]:
+    elif choice == _choices[1]:
         swizzle_menu()
 
 
@@ -57,11 +57,11 @@ def swizzle_menu():
     """The menu which the user can repack(swizzle) an existing packed texture.\n
     The user can optionally add an alpha channel too.
     """
-    swizzle_menu_text = "Select:\n{0}) Swap RGB channels\n{1}) Add Alpha Channel\n{2}) Back to Main Menu\n".format(*__choices)
+    swizzle_menu_text = "Select:\n{0}) Swap RGB channels\n{1}) Add Alpha Channel\n{2}) Back to Main Menu\n".format(*_choices)
     while True:
         try:
             choice = int(input_question(swizzle_menu_text))
-            if choice in __choices:
+            if choice in _choices:
                 break
             else:
                 error_response("Invalid number")
@@ -69,11 +69,11 @@ def swizzle_menu():
         except ValueError:
             error_response("It must be a number")
             continue
-    if choice == __choices[0]:
+    if choice == _choices[0]:
         swap_rgba()
-    elif choice == __choices[1]:
+    elif choice == _choices[1]:
         add_alpha()
-    elif choice == __choices[2]:
+    elif choice == _choices[2]:
         main_menu()
 
 
@@ -82,7 +82,7 @@ def input_question(text):
 
 
 def error_response(response):
-    print("{0}! Please pick {1}, {2} or {3}\n".format(response, *__choices))
+    print("{0}! Please pick {1}, {2} or {3}\n".format(response, *_choices))
 
 
 def swap_rgba():
@@ -98,14 +98,12 @@ def swap_rgba():
         try:
             # input_image = input("Image path: ")
             with Image.open(input_image) as image:  # type: Image.Image
-                print("Opened {file_name}\nFormat: {format}\nSize: {size}\nMode: {mode}"
-                      .format(file_name=os.path.basename(input_image), format=image.format, size=image.size, mode=image.mode))
+                print("Opened {file_name}\nFormat: {format}\nSize: {size}\nMode: {mode}".format(file_name=os.path.basename(input_image), format=image.format, size=image.size, mode=image.mode))
 
-                new_image = ChannelPack(image)
+                new_image = texturebox.core.ChannelPack(image)
                 # TODO: USER INPUT
                 try:
-                    formatted_string = new_image.parse_input(input("Which channels should be swapped?\nPlease use the form: {}\n".format(new_image.form_text)))
-                    new_image.swizzle(formatted_string)
+                    new_image.swizzle(new_image.parse_input(input("Which channels should be swapped?\nPlease use the form: {}\n".format(new_image.form_text))))
                 except TypeError:
                     print("One of the specified channels does not exist in the original texture!\n")
                     continue
@@ -119,7 +117,7 @@ def swap_rgba():
                     merged_image = new_image.merge(mode=RGBA)
 
                     merged_image.getchannel(3).show()  # for testing
-                break
+                # TODO: Continue with what happens after the operation has been done - another menu with another operation or to save file(overwrite old one or make new one(then new filename))?
 
         except IOError:
             print("Can't open the image - Invalid file path or it doesn't exist!\n"
@@ -132,5 +130,5 @@ def add_alpha():
 
 
 if __name__ == '__main__':
-    print(__intro_text)
+    print(_intro_text)
     main_menu()
