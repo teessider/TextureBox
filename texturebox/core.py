@@ -1,8 +1,10 @@
 from PIL import Image
 
 
-class ChannelPack:
-    # Takes in a string like "R <> G" and so do Image.merge(RGB or RGBA, (green, red, blue))
+class ChannelPack(object):
+    """
+    Takes in a string like "R <> G" and so do Image.merge(RGB or RGBA, (green, red, blue))
+    """
     def __init__(self, image):
         self.image = image  # type: Image.Image
         self.input_channels = []
@@ -48,6 +50,7 @@ class ChannelPack:
         """
         swizzle_1 = rgb_swizzle_channels[0]
         swizzle_2 = rgb_swizzle_channels[1]
+        # TODO: Add in support for RGBA and it's RGB swapping possibilities as currently there is none! So unless one of the channels is the alpha, this will break
 
         # Instead of using the global variables RGB and RGBA, the letters are used for code readability.
         # RGB Possibilities

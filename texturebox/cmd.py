@@ -91,8 +91,8 @@ def swap_rgba():
     # Ability to overwrite old file (copy old file just in case)
     # Undo? Or Reset to original texture state
 
-    input_image = "E:\Projects\\test\\test1.tga"  # test file for now
-    # input_image = "E:\Projects\\test\\test2_alpha.tga"  # also test file for now
+    # input_image = "E:\Projects\\test\\test1.tga"  # test file for now
+    input_image = "E:\Projects\\test\\test2_alpha.tga"  # also test file for now
     # image1a = "E:\Projects\\test\\test1_16bit.png"
     while True:
         try:
@@ -103,21 +103,34 @@ def swap_rgba():
                 new_image = texturebox.core.ChannelPack(image)
                 # TODO: USER INPUT
                 try:
-                    new_image.swizzle(new_image.parse_input(input("Which channels should be swapped?\nPlease use the form: {}\n".format(new_image.form_text))))
+                    new_image.swizzle(new_image.parse_input(input("Which channels should be swapped?\n"
+                                                                  "Please use the form: {}\n".format(new_image.form_text))))
                 except TypeError:
+                    # Would be cool to have the none existing channel in the error message.
                     print("One of the specified channels does not exist in the original texture!\n")
                     continue
 
                 if image.mode == RGB:
                     merged_image = new_image.merge(mode=RGB)
 
-                    merged_image.show()  # for testing
-
+                    # merged_image.show()  # for testing
                 elif image.mode == RGBA:
                     merged_image = new_image.merge(mode=RGBA)
 
-                    merged_image.getchannel(3).show()  # for testing
+                    # merged_image.getchannel(3).show()  # for testing
+
                 # TODO: Continue with what happens after the operation has been done - another menu with another operation or to save file(overwrite old one or make new one(then new filename))?
+                try:
+                    save_response = input("Save the file?\n").upper()
+                    if save_response == 'Y':
+                        print("Time to save!")
+                    elif save_response == 'N':
+                        merged_image.swizzle(merged_image.parse_input(input("Which channels should be swapped?\n"
+                                                                            "Please use the form: {}\n".format(merged_image.form_text))))
+                    else:
+                        raise ValueError
+                except ValueError:
+                    pass
 
         except IOError:
             print("Can't open the image - Invalid file path or it doesn't exist!\n"
