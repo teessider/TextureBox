@@ -22,10 +22,9 @@ class ChannelPack(object):
         error_text_part = "Please specify the channels that will be swapped using the form: {0}".format(self.form_text)
         try:
             user_action = user_action.upper()
-            if ' ' not in user_action:
-                user_string = "{0} {1}{2} {3}".format(*user_action).split(' ')  # Need the spaces so it can be turned into a list for later.
-            else:
-                user_string = user_action.split(' ')
+
+            # Need the spaces so it can be turned into a list for later.
+            user_string = "{0} {1}{2} {3}".format(*user_action).split(' ') if ' ' not in user_action else user_action.split(' ')
 
             if (user_string[0] and user_string[2] in self.image.mode) and (user_string[1] == '<>'):
                 # Checks to make sure the string is in the way that is wanted: "[Swizzle Input 1]<>[Swizzle Input 2]"
@@ -42,38 +41,52 @@ class ChannelPack(object):
             print("Invalid input! {0}".format(error_text_part))
             return
 
-    def swizzle(self, rgb_swizzle_channels):
+    def swizzle(self, swizzle_channels):
         """
         Swizzles the two input channels of an RGB or RGBA texture.\n
         Returns:
             tuple: Swizzled texture channels ready to be merged into new texture.
         """
-        swizzle_1 = rgb_swizzle_channels[0]
-        swizzle_2 = rgb_swizzle_channels[1]
+        swizzle_1 = swizzle_channels[0]
+        swizzle_2 = swizzle_channels[1]
         # TODO: Add in support for RGBA and it's RGB swapping possibilities as currently there is none! So unless one of the channels is the alpha, this will break
 
         # Instead of using the global variables RGB and RGBA, the letters are used for code readability.
-        # RGB Possibilities
-        if (swizzle_1 == 'R' and swizzle_2 == 'G') or (swizzle_1 == 'G' and swizzle_2 == 'R'):
-            self.new_channels = (self.image.getchannel(1), self.image.getchannel(0), self.image.getchannel(2))
+        # RGBA Possibilities
+        if 'A' in self.image.mode:
+            if (swizzle_1 == 'R' and swizzle_2 == 'G') or (swizzle_1 == 'G' and swizzle_2 == 'R'):
+                self.new_channels = (self.image.getchannel(1), self.image.getchannel(0), self.image.getchannel(2), self.image.getchannel(3))
 
-        elif (swizzle_1 == 'G' and swizzle_2 == 'B') or (swizzle_1 == 'B' and swizzle_2 == 'G'):
-            self.new_channels = (self.image.getchannel(0), self.image.getchannel(2), self.image.getchannel(1))
+            elif (swizzle_1 == 'R' and swizzle_2 == 'B') or (swizzle_1 == 'B' and swizzle_2 == 'R'):
+                self.new_channels = (self.image.getchannel(2), self.image.getchannel(1), self.image.getchannel(0), self.image.getchannel(3))
 
-        elif (swizzle_1 == 'B' and swizzle_2 == 'R') or (swizzle_1 == 'R' and swizzle_2 == 'B'):
-            self.new_channels = (self.image.getchannel(2), self.image.getchannel(1), self.image.getchannel(0))
+            elif (swizzle_1 == 'G' and swizzle_2 == 'B') or (swizzle_1 == 'B' and swizzle_2 == 'G'):
+                self.new_channels = (self.image.getchannel(0), self.image.getchannel(2), self.image.getchannel(1), self.image.getchannel(3))
 
-        # Alpha Possibilities
-        elif (swizzle_1 == 'R' and swizzle_2 == 'A') or (swizzle_1 == 'A' and swizzle_2 == 'R'):
-            self.new_channels = (self.image.getchannel(3), self.image.getchannel(1), self.image.getchannel(2), self.image.getchannel(0))
+            elif (swizzle_1 == 'R' and swizzle_2 == 'A') or (swizzle_1 == 'A' and swizzle_2 == 'R'):
+                self.new_channels = (self.image.getchannel(3), self.image.getchannel(1), self.image.getchannel(2), self.image.getchannel(0))
 
-        elif (swizzle_1 == 'G' and swizzle_2 == 'A') or (swizzle_1 == 'A' and swizzle_2 == 'G'):
-            self.new_channels = (self.image.getchannel(0), self.image.getchannel(3), self.image.getchannel(2), self.image.getchannel(1))
+            elif (swizzle_1 == 'G' and swizzle_2 == 'A') or (swizzle_1 == 'A' and swizzle_2 == 'G'):
+                self.new_channels = (self.image.getchannel(0), self.image.getchannel(3), self.image.getchannel(2), self.image.getchannel(1))
 
-        elif (swizzle_1 == 'B' and swizzle_2 == 'A') or (swizzle_1 == 'A' and swizzle_2 == 'B'):
-            self.new_channels = (self.image.getchannel(0), self.image.getchannel(1), self.image.getchannel(3), self.image.getchannel(2))
+            elif (swizzle_1 == 'B' and swizzle_2 == 'A') or (swizzle_1 == 'A' and swizzle_2 == 'B'):
+                self.new_channels = (self.image.getchannel(0), self.image.getchannel(1), self.image.getchannel(3), self.image.getchannel(2))
+        else:
+            # RGB Possibilities
+            if (swizzle_1 == 'R' and swizzle_2 == 'G') or (swizzle_1 == 'G' and swizzle_2 == 'R'):
+                self.new_channels = (self.image.getchannel(1), self.image.getchannel(0), self.image.getchannel(2))
+
+            elif (swizzle_1 == 'R' and swizzle_2 == 'B') or (swizzle_1 == 'B' and swizzle_2 == 'R'):
+                self.new_channels = (self.image.getchannel(2), self.image.getchannel(1), self.image.getchannel(0))
+
+            elif (swizzle_1 == 'G' and swizzle_2 == 'B') or (swizzle_1 == 'B' and swizzle_2 == 'G'):
+                self.new_channels = (self.image.getchannel(0), self.image.getchannel(2), self.image.getchannel(1))
 
         return self.new_channels
 
     def merge(self, mode):
         return Image.merge('RGB', self.new_channels) if mode == 'RGB' else Image.merge('RGBA', self.new_channels)
+
+
+if __name__ == '__main__':
+    ChannelPack(Image.Image())

@@ -70,11 +70,55 @@ def swizzle_menu():
             error_response("It must be a number")
             continue
     if choice == _choices[0]:
-        swap_rgba()
+        swizzle_rgba()
     elif choice == _choices[1]:
         add_alpha()
     elif choice == _choices[2]:
         main_menu()
+
+
+def swizzle_rgba():
+    # TODO: Get file input from user - Maybe also reading from a file can be an option (WAY IN THE FUTURE - batching).
+    # Support for single and multiple operations (R > G, R > B etc.)?
+    # Ability to overwrite old file (copy old file just in case)
+    # Undo? Or Reset to original texture state
+
+    # input_image = "E:\\Projects\\test\\test1.tga"  # test file for now
+    # input_image = "E:\\Projects\\test\\test2_alpha.tga"  # also test file for now
+    while True:
+        try:
+            # TODO: Make sure path is valid (as it needs to have \\ as the directories)
+            input_image = input("Image path: ")
+            image_dir = os.path.dirname(input_image)
+            image_name = os.path.basename(input_image)
+            image_ext = os.path.splitext(input_image)[1]
+
+            with Image.open(input_image) as image:  # type: Image.Image
+                print("Opened {file_name}\nFormat: {format}\nSize: {size}\nMode: {mode}".format(file_name=image_name, format=image.format, size=image.size, mode=image.mode))
+
+                new_image = texturebox.core.ChannelPack(image)
+                try:
+                    new_image.swizzle(new_image.parse_input(input("Which channels should be swapped?\nPlease use the form: {}\n".format(new_image.form_text))))
+                except TypeError:
+                    # Would be cool to have the none existing channel in the error message.
+                    print("One of the specified channels does not exist in the original texture!\n")
+                    continue
+
+                # TODO: Continue with what happens after the operation has been done - another menu with another operation or to save file(overwrite old one or make new one(then new filename))?
+                # For now the new file is saved in the same folder as the old one.
+                saved_image = save_image(image_dir, image, new_image, image_ext)
+
+                if saved_image:
+                    print("Saved to: {}\n".format(os.path.normpath(image_dir)))
+                    main_menu()
+
+        except IOError:
+            print("Can't open the image - Invalid file path or it doesn't exist!\nCheck the file extension and/or the folder!")
+            continue
+
+
+def add_alpha():
+    print("TO DO")
 
 
 def input_question(text):
@@ -85,61 +129,25 @@ def error_response(response):
     print("{0}! Please pick {1}, {2} or {3}\n".format(response, *_choices))
 
 
-def swap_rgba():
-    # TODO: Get file input from user - Maybe also reading from a file can be an option (WAY IN THE FUTURE - batching).
-    # Support for single and multiple operations (R > G, R > B etc.)?
-    # Ability to overwrite old file (copy old file just in case)
-    # Undo? Or Reset to original texture state
-
-    # input_image = "E:\Projects\\test\\test1.tga"  # test file for now
-    input_image = "E:\Projects\\test\\test2_alpha.tga"  # also test file for now
-    # image1a = "E:\Projects\\test\\test1_16bit.png"
+def save_image(directory, old_image, new_image, extension):
     while True:
         try:
-            # input_image = input("Image path: ")
-            with Image.open(input_image) as image:  # type: Image.Image
-                print("Opened {file_name}\nFormat: {format}\nSize: {size}\nMode: {mode}".format(file_name=os.path.basename(input_image), format=image.format, size=image.size, mode=image.mode))
+            save_response = input("Save the file? ").upper()
+            if save_response == 'Y':
+                merged_image = new_image.merge(mode=RGB) if old_image.mode == RGB else new_image.merge(mode=RGBA)  # type: Image.Image
 
-                new_image = texturebox.core.ChannelPack(image)
-                # TODO: USER INPUT
-                try:
-                    new_image.swizzle(new_image.parse_input(input("Which channels should be swapped?\n"
-                                                                  "Please use the form: {}\n".format(new_image.form_text))))
-                except TypeError:
-                    # Would be cool to have the none existing channel in the error message.
-                    print("One of the specified channels does not exist in the original texture!\n")
-                    continue
+                merged_file = os.path.join(directory, input("New Image name (without extension): ") + extension)
 
-                if image.mode == RGB:
-                    merged_image = new_image.merge(mode=RGB)
-
-                    # merged_image.show()  # for testing
-                elif image.mode == RGBA:
-                    merged_image = new_image.merge(mode=RGBA)
-
-                    # merged_image.getchannel(3).show()  # for testing
-
-                # TODO: Continue with what happens after the operation has been done - another menu with another operation or to save file(overwrite old one or make new one(then new filename))?
-                try:
-                    save_response = input("Save the file?\n").upper()
-                    if save_response == 'Y':
-                        print("Time to save!")
-                    elif save_response == 'N':
-                        merged_image.swizzle(merged_image.parse_input(input("Which channels should be swapped?\n"
-                                                                            "Please use the form: {}\n".format(merged_image.form_text))))
-                    else:
-                        raise ValueError
-                except ValueError:
-                    pass
-
-        except IOError:
-            print("Can't open the image - Invalid file path or it doesn't exist!\n"
-                  "Check the file extension and/or the folder!")
+                merged_image.save(merged_file)
+                return True
+            elif save_response == 'N':
+                new_image.swizzle(new_image.parse_input(input("Which channels should be swapped?\nPlease use the form: {}\n".format(new_image.form_text))))
+                return False
+            else:
+                raise ValueError
+        except ValueError:
+            print("Invalid response! Please pick \'Y\' or \'N\'")
             continue
-
-
-def add_alpha():
-    print("TO DO")
 
 
 if __name__ == '__main__':
