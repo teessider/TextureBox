@@ -50,6 +50,7 @@ class ChannelPack(object):
         swizzle_1 = swizzle_channels[0]
         swizzle_2 = swizzle_channels[1]
         # TODO: Add in support for RGBA and it's RGB swapping possibilities as currently there is none! So unless one of the channels is the alpha, this will break
+        # TODO: Turn this into dictionary for speed!
 
         # Instead of using the global variables RGB and RGBA, the letters are used for code readability.
         # RGBA Possibilities
